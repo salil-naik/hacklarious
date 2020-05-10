@@ -9,12 +9,16 @@ const Textures = require('Textures');
 const NativeUI = require('NativeUI');
 const Patches = require('Patches');
 const Diagnostics = require('Diagnostics');
+const Materials = require('Materials');
+const Animation = require("Animation");
 
 Promise.all([
     Textures.findFirst('icon-1'),
-    Textures.findFirst('icon-2'),
+    Textures.findFirst('icon-4'),
     Textures.findFirst('icon-3'),
-    sceneRoot.find('placer'),
+    // Textures.findFirst('icon-4'),
+    sceneRoot.findFirst('nullObject0'),
+    sceneRoot.findFirst('Cylinder'),
 ]).then(onReady);
 
 function onReady(assets){
@@ -22,17 +26,18 @@ function onReady(assets){
     const icon2 = assets[1];
     const icon3 = assets[2];
     const placer = assets[3];
+    const coinObject = assets[4];
 
     const placerTransform = placer.transform;
 
-    placerTransform.scaleX = 0.05;
-    placerTransform.scaleY = 0.05;
-    placerTransform.scaleZ = 0.05;
+    placerTransform.scaleX = 0.15;
+    placerTransform.scaleY = 0.15;
+    placerTransform.scaleZ = 0.15;
 
     const picker = NativeUI.picker;
 
     const index = 0; 
-    const selection = 0;
+    // const textureSelection = 0;
 
     const configuration = {
         selectedIndex: index,
@@ -46,9 +51,33 @@ function onReady(assets){
     picker.configure(configuration);
     picker.visible = true;
 
+    // Locate the material and texture in the Assets
+    const material1 = Materials.findFirst('coin_mat_1');
+    const material2 = Materials.findFirst('coin_mat_2');
+    const material3 = Materials.findFirst('coin_mat_3');
+
+    // Diagnostics.log(material1);
+
+    // Assign the texture to the material
+    // material.diffuse = texture1;
+
     picker.selectedIndex.monitor().subscribe(function(index){
-        Patches.inputs.setScalar('selection', index.newValue);
-    })
+        Patches.inputs.setScalar('textureSelection', index.newValue);
+    });
+
+    const animationParameters = {
+        durationMilliseconds: 3000,
+        loopCount: Infinity, 
+        mirror: false,
+    }
+
+    const animationDriver = Animation.timeDriver(animationParameters);
+    animationDriver.start();
+    const animationSampler = Animation.samplers.linear(0, 6.3);
+    const animation = Animation.animate(animationDriver, animationSampler);
+
+    placer.transform.rotationY = animation;
+
 }
 
 // To use variables and functions across files, use export/import keyword
